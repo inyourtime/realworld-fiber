@@ -41,17 +41,39 @@ func (r *userRepo) Update(arg domain.User) (domain.User, error) {
 	return user.ToDomain(), nil
 }
 
-func (r *userRepo) FindOne(condition domain.User) (domain.User, error) {
-	user := model.User{}
-	cond := model.AsUser(condition)
-	err := r.db.Where(cond).First(&user).Error
+/**
+ * FilterUser is a method of the userRepo struct that filters users based on a given condition.
+ *
+ * Parameters:
+ * - condition: The condition to filter users by.
+ * 		example: domain.User{Email: "some@mail.co"} or map[string]interface{}{"email": "some@mail.co"}
+ *
+ * Returns:
+ * - []domain.User: A slice of domain.User objects that match the condition.
+ * - error: An error if the filtering process encounters any issues.
+ */
+func (r *userRepo) FilterUser(condition interface{}) ([]domain.User, error) {
+	users := []model.User{}
+	err := r.db.Where(condition).Find(&users).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return domain.User{}, exception.New(exception.TypeNotFound, "User not found", err)
-		}
+		return []domain.User{}, err
+	}
+	result := []domain.User{}
+	for _, user := range users {
+		result = append(result, user.ToDomain())
+	}
+	return result, nil
+}
+
+func (r *userRepo) FindOne(condition interface{}) (domain.User, error) {
+	users, err := r.FilterUser(condition)
+	if err != nil {
 		return domain.User{}, err
 	}
-	return user.ToDomain(), nil
+	if len(users) == 0 {
+		return domain.User{}, exception.New(exception.TypeNotFound, "User not found", nil)
+	}
+	return users[0], nil
 }
 
 func (r *userRepo) Follow(arg1 domain.User, arg2 domain.User) error {
