@@ -38,10 +38,6 @@ func (server *Server) setupRouter() {
 
 	app.Use(recover.New(), cors.New(cors.ConfigDefault))
 
-	// app.Use(func(c *fiber.Ctx) error {
-	// 	return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "route not found"})
-	// })
-
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Hello World!"})
 	})
@@ -52,6 +48,10 @@ func (server *Server) setupRouter() {
 		server.userRouter(apiRouter)
 		server.articleRouter(apiRouter)
 	}
+
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "route not found"})
+	})
 
 	server.app = app
 }
@@ -77,6 +77,11 @@ func (server *Server) userRouter(router fiber.Router) {
 
 	router.Post("/users", userHandler.Register)
 	router.Post("/users/login", userHandler.Login)
+
+	userRouter := router.Group("/user")
+	userRouter.Use(server.AuthMiddleware(true))
+	userRouter.Get("/", userHandler.Current)
+	userRouter.Put("/", userHandler.Update)
 }
 
 func (server *Server) articleRouter(router fiber.Router) {
