@@ -14,7 +14,7 @@ func (uu *userUsecase) Register(arg port.RegisterParams) (domain.User, error) {
 		return domain.User{}, err
 	}
 
-	user, err := uu.property.userRepo.Create(reqUser)
+	user, err := uu.property.repo.User().Create(reqUser)
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -28,7 +28,7 @@ func (uu *userUsecase) Register(arg port.RegisterParams) (domain.User, error) {
 }
 
 func (uu *userUsecase) Login(arg port.LoginParams) (domain.User, error) {
-	existing, err := uu.property.userRepo.FilterUser(domain.User{Email: arg.User.Email})
+	existing, err := uu.property.repo.User().FilterUser(domain.User{Email: arg.User.Email})
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -54,7 +54,7 @@ func (uu *userUsecase) Current(arg port.AuthParams) (domain.User, error) {
 		return domain.User{}, exception.New(exception.TypePermissionDenied, "token payload not provided", nil)
 	}
 
-	existing, err := uu.property.userRepo.FilterUser(domain.User{ID: arg.Payload.UserID})
+	existing, err := uu.property.repo.User().FilterUser(domain.User{ID: arg.Payload.UserID})
 	if err != nil {
 		return domain.User{}, err
 	}

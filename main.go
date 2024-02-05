@@ -6,7 +6,9 @@ import (
 	"os"
 	"realworld-go-fiber/adapter/handler/restful"
 	"realworld-go-fiber/adapter/logger"
+	"realworld-go-fiber/adapter/repository/sql"
 	"realworld-go-fiber/adapter/repository/sql/db"
+	"realworld-go-fiber/core/uc"
 	"realworld-go-fiber/core/util"
 )
 
@@ -25,6 +27,12 @@ func main() {
 	}
 	logger.Info().Msg("Connect Database successfully")
 
-	server := restful.NewServer(config, logger, database.DB())
+	repo := sql.NewSQLRepository(database.DB(), logger)
+	uc, err := uc.NewUsecase(config, repo, logger)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	server := restful.NewServer(config, logger, uc)
 	log.Fatal(server.Start())
 }
