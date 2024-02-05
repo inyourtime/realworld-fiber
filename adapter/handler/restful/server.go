@@ -1,23 +1,23 @@
 package restful
 
 import (
-	"realworld-go-fiber/adapter/repository/sql/db"
 	"realworld-go-fiber/core/port"
 	"realworld-go-fiber/core/util"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"gorm.io/gorm"
 )
 
 type Server struct {
 	config util.Config
 	app    *fiber.App
 	logger port.Logger
-	db     *db.DB
+	db     *gorm.DB
 }
 
-func NewServer(config util.Config, logger port.Logger, db *db.DB) port.Server {
+func NewServer(config util.Config, logger port.Logger, db *gorm.DB) port.Server {
 	server := &Server{
 		config: config,
 		logger: logger,

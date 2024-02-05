@@ -25,6 +25,6 @@ func main() {
 	}
 	logger.Info().Msg("Connect Database successfully")
 
-	server := restful.NewServer(config, logger, database)
+	server := restful.NewServer(config, logger, database.DB())
 	log.Fatal(server.Start())
 }
