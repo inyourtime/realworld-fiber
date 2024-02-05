@@ -31,14 +31,20 @@ func (r *userRepo) Create(arg domain.User) (domain.User, error) {
 
 func (r *userRepo) Update(arg domain.User) (domain.User, error) {
 	user := model.AsUser(arg)
-	err := r.db.Save(&user).Error
+	err := r.db.Model(&user).Updates(user).Error
 	if err != nil {
 		if err == gorm.ErrDuplicatedKey {
 			return domain.User{}, exception.New(exception.TypeValidation, "Email or Username are already existing", err)
 		}
 		return domain.User{}, err
 	}
-	return user.ToDomain(), nil
+
+	updated, err := r.FindOne(domain.User{ID: user.ID})
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return updated, nil
 }
 
 /**

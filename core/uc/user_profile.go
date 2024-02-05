@@ -1,7 +1,20 @@
 package uc
 
-func (uu *userUsecase) Profile() {}
+import (
+	"realworld-go-fiber/core/domain"
+	"realworld-go-fiber/core/port"
+)
 
-func (uu *userUsecase) Follow() {}
+func (uu *userUsecase) Profile(arg port.ProfileParams) (domain.User, error) {
+	return domain.User{}, nil
+}
 
-func (uu *userUsecase) UnFollow() {}
+func (uu *userUsecase) Follow(arg port.ProfileParams) (domain.User, error) {
+
+	return domain.User{}, nil
+}
+
+func (uu *userUsecase) UnFollow(arg port.ProfileParams) (domain.User, error) {
+
+	return domain.User{}, nil
+}

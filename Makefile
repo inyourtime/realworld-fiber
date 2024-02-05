@@ -8,6 +8,6 @@ run:
 clean:
 	rm -f server
 build-local:
-	docker build -t echo-hello . 
+	docker build -t rw-fiber . 
 build-dev:
 	docker buildx build --push --tag inyourtime/ecommerce-be:dev --platform=linux/amd64 .	

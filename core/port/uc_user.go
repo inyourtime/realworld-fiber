@@ -18,13 +18,23 @@ type AuthParams struct {
 	Payload *token.Payload
 }
 
+type UpdateUserParams struct {
+	User    domain.User
+	AuthArg AuthParams
+}
+
+type ProfileParams struct {
+	AuthArg  AuthParams
+	Username string
+}
+
 type UserUsecase interface {
 	Register(arg RegisterParams) (domain.User, error)
 	Login(arg LoginParams) (domain.User, error)
-	Update()
+	Update(arg UpdateUserParams) (domain.User, error)
 	Current(arg AuthParams) (domain.User, error)
 
-	Profile()
-	Follow()
-	UnFollow()
+	Profile(arg ProfileParams) (domain.User, error)
+	Follow(arg ProfileParams) (domain.User, error)
+	UnFollow(arg ProfileParams) (domain.User, error)
 }
