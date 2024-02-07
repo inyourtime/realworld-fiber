@@ -135,3 +135,63 @@ func (h *userHandler) Update(c *fiber.Ctx) error {
 	res := UserResponse{serializeUser(user)}
 	return c.JSON(res)
 }
+
+func (h *userHandler) Profile(c *fiber.Ctx) error {
+	arg, err := getAuthArg(c)
+	if err != nil {
+		return errorHandler(c, err)
+	}
+
+	username := c.Params("username")
+
+	user, err := h.userUc.Profile(port.ProfileParams{
+		AuthArg:  arg,
+		Username: username,
+	})
+	if err != nil {
+		return errorHandler(c, err)
+	}
+
+	res := ProfileResponse{Profile: serializeProfile(user)}
+	return c.JSON(res)
+}
+
+func (h *userHandler) Follow(c *fiber.Ctx) error {
+	arg, err := getAuthArg(c)
+	if err != nil {
+		return errorHandler(c, err)
+	}
+
+	username := c.Params("username")
+
+	user, err := h.userUc.Follow(port.ProfileParams{
+		AuthArg:  arg,
+		Username: username,
+	})
+	if err != nil {
+		return errorHandler(c, err)
+	}
+
+	res := ProfileResponse{Profile: serializeProfile(user)}
+	return c.JSON(res)
+}
+
+func (h *userHandler) UnFollow(c *fiber.Ctx) error {
+	arg, err := getAuthArg(c)
+	if err != nil {
+		return errorHandler(c, err)
+	}
+
+	username := c.Params("username")
+
+	user, err := h.userUc.UnFollow(port.ProfileParams{
+		AuthArg:  arg,
+		Username: username,
+	})
+	if err != nil {
+		return errorHandler(c, err)
+	}
+
+	res := ProfileResponse{Profile: serializeProfile(user)}
+	return c.JSON(res)
+}

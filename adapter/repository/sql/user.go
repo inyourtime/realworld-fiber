@@ -82,14 +82,32 @@ func (r *userRepo) FindOne(condition interface{}) (domain.User, error) {
 	return users[0], nil
 }
 
+func (r *userRepo) FilterFollow(user domain.User, target domain.User) ([]domain.UserFollow, error) {
+	a := model.AsUser(user)
+	b := model.AsUser(target)
+	result := []model.User{}
+	err := r.db.Model(&a).Select("id").Association("Followings").Find(&result, &b)
+	if err != nil {
+		return []domain.UserFollow{}, err
+	}
+	uf := []domain.UserFollow{}
+	for _, u := range result {
+		uf = append(uf, domain.UserFollow{
+			FollowingID: u.ID,
+			UserID:      user.ID,
+		})
+	}
+	return uf, nil
+}
+
 func (r *userRepo) Follow(arg1 domain.User, arg2 domain.User) error {
 	a := model.AsUser(arg1)
 	b := model.AsUser(arg2)
-	return r.db.Model(a).Association("Followings").Append(b)
+	return r.db.Model(&a).Association("Followings").Append(&b)
 }
 
 func (r *userRepo) UnFollow(arg1 domain.User, arg2 domain.User) error {
 	a := model.AsUser(arg1)
 	b := model.AsUser(arg2)
-	return r.db.Model(a).Association("Followings").Delete(b)
+	return r.db.Model(&a).Association("Followings").Delete(&b)
 }

@@ -41,3 +41,8 @@ func NewUser(arg User) (User, error) {
 
 	return user, nil
 }
+
+type UserFollow struct {
+	UserID      uint
+	FollowingID uint
+}

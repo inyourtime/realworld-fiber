@@ -9,6 +9,7 @@ type UserRepository interface {
 	Update(m domain.User) (domain.User, error)
 	FilterUser(condition interface{}) ([]domain.User, error)
 	FindOne(condition interface{}) (domain.User, error)
+	FilterFollow(a domain.User, b domain.User) ([]domain.UserFollow, error)
 	Follow(a domain.User, b domain.User) error
 	UnFollow(a domain.User, b domain.User) error
 }

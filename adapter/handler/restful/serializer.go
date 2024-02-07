@@ -23,3 +23,23 @@ func serializeUser(arg domain.User) User {
 		Token:    arg.Token,
 	}
 }
+
+type Profile struct {
+	Username  string  `json:"username"`
+	Bio       *string `json:"bio"`
+	Image     *string `json:"image"`
+	Following bool    `json:"following"`
+}
+
+type ProfileResponse struct {
+	Profile Profile `json:"profile"`
+}
+
+func serializeProfile(arg domain.User) Profile {
+	return Profile{
+		Username:  arg.Username,
+		Image:     arg.Image,
+		Bio:       arg.Bio,
+		Following: arg.IsFollowed,
+	}
+}

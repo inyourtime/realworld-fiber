@@ -82,6 +82,13 @@ func (server *Server) userRouter(router fiber.Router) {
 	userRouter.Use(server.AuthMiddleware(true))
 	userRouter.Get("/", userHandler.Current)
 	userRouter.Put("/", userHandler.Update)
+
+	profileRouter := router.Group("/profiles")
+	profileRouter.Use(server.AuthMiddleware(false))
+	profileRouter.Get("/:username", userHandler.Profile)
+	profileRouter.Use(server.AuthMiddleware(true))
+	profileRouter.Post("/:username/follow", userHandler.Follow)
+	profileRouter.Delete("/:username/follow", userHandler.UnFollow)
 }
 
 func (server *Server) articleRouter(router fiber.Router) {
