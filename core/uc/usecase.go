@@ -31,8 +31,9 @@ func NewUsecase(config util.Config, repo port.Repository, logger port.Logger) (p
 		logger:     logger,
 	}
 	uc := usecases{
-		property:    property,
-		userUsecase: NewUserUsecase(property),
+		property:       property,
+		userUsecase:    NewUserUsecase(property),
+		articleUsecase: NewArticleUsecase(property),
 	}
 	return &uc, nil
 }

@@ -1,6 +1,9 @@
 package restful
 
-import "realworld-go-fiber/core/domain"
+import (
+	"realworld-go-fiber/core/domain"
+	"time"
+)
 
 type User struct {
 	Email    string  `json:"email"`
@@ -41,5 +44,37 @@ func serializeProfile(arg domain.User) Profile {
 		Image:     arg.Image,
 		Bio:       arg.Bio,
 		Following: arg.IsFollowed,
+	}
+}
+
+type Article struct {
+	Slug        string   `json:"slug"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Body        string   `json:"body"`
+	Tags        []string `json:"tagList"`
+	Author      Profile  `json:"author"`
+	Favorited   bool     `json:"favorited"`
+	Favorites   int      `json:"favoritesCount"`
+	CreatedAt   string   `json:"createdAt"`
+	UpdatedAt   string   `json:"updatedAt"`
+}
+
+type ArticleResponse struct {
+	Article Article `json:"article"`
+}
+
+func serializeArticle(arg domain.Article) Article {
+	return Article{
+		Slug:        arg.Slug,
+		Title:       arg.Title,
+		Description: arg.Description,
+		Body:        arg.Body,
+		Tags:        arg.TagNames,
+		Author:      serializeProfile(arg.Author),
+		Favorited:   arg.IsFavorite,
+		Favorites:   arg.FavoriteCount,
+		CreatedAt:   arg.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   arg.UpdatedAt.Format(time.RFC3339),
 	}
 }

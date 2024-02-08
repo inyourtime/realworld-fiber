@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type Article struct {
 	ID            uint
@@ -15,4 +18,24 @@ type Article struct {
 	TagNames      []string
 	IsFavorite    bool
 	FavoriteCount int
+}
+
+func (article *Article) SetTitle(value string) {
+	article.Title = value
+	article.Slug = strings.ToLower(strings.ReplaceAll(value, " ", "-"))
+}
+
+func NewArticle(arg Article) Article {
+	article := Article{
+		Description: arg.Description,
+		Body:        arg.Body,
+		Author:      arg.Author,
+	}
+	article.SetTitle(arg.Title)
+	return article
+}
+
+type Tag struct {
+	ID   uint
+	Name string
 }

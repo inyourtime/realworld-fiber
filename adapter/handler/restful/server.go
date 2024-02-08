@@ -92,5 +92,10 @@ func (server *Server) userRouter(router fiber.Router) {
 }
 
 func (server *Server) articleRouter(router fiber.Router) {
+	articleHandler := NewArticleHandler(server.usecase.Article(), server.validator)
 
+	aRouter := router.Group("/articles")
+
+	aRouter.Use(server.AuthMiddleware(true))
+	aRouter.Post("/", articleHandler.CreateArticle)
 }
