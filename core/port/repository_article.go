@@ -7,6 +7,6 @@ type AddTagsPayload struct {
 }
 
 type ArticleRepository interface {
-	FilterTags(condition interface{}) ([]domain.Tag, error)
+	// FilterTags(condition interface{}) ([]domain.Tag, error)
 	CreateArticleTransaction(article domain.Article) (domain.Article, []domain.Tag, error)
 }

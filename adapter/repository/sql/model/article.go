@@ -59,3 +59,16 @@ func AsArticle(arg domain.Article) Article {
 		Author:      AsUser(arg.Author),
 	}
 }
+
+func FilterTagNotExist(existing []Tag, incoming []string, result *[]Tag) {
+	existMap := map[string]Tag{}
+	for _, tag := range existing {
+		existMap[tag.Name] = tag
+	}
+	for _, tag := range incoming {
+		if _, exist := existMap[tag]; exist {
+			continue
+		}
+		*result = append(*result, Tag{Name: tag})
+	}
+}
