@@ -22,17 +22,69 @@ func (u *articleUsecase) CreateArticle(arg port.CreateArticleParams) (domain.Art
 		Description: arg.Article.Description,
 		Body:        arg.Article.Body,
 	})
-	article.TagNames = arg.Article.TagNames
 
-	created, tags, err := u.property.repo.Article().CreateArticleTransaction(article)
+	assigningTags := []domain.Tag{}
+	createdArticle := domain.Article{}
+
+	err = u.property.repo.Atomic(func(r port.Repository) error {
+		created, err := r.Article().CreateArticle(article)
+		if err != nil {
+			return err
+		}
+		createdArticle = created
+
+		if len(arg.Article.TagNames) == 0 {
+			return nil
+		}
+
+		existing, err := r.Article().FilterTags(map[string]interface{}{"name": arg.Article.TagNames})
+		if err != nil {
+			return err
+		}
+
+		assigningTags = append(assigningTags, existing...)
+
+		tags := FilterTagNotExist(existing, arg.Article.TagNames)
+		if len(tags) > 0 {
+			craetedTags, err := r.Article().AddTags(port.AddTagsPayload{Tags: tags})
+			if err != nil {
+				return err
+			}
+			assigningTags = append(assigningTags, craetedTags...)
+		}
+
+		if err := r.Article().AssignTags(port.AssignTagsParams{
+			Article: created,
+			Tags:    assigningTags,
+		}); err != nil {
+			return err
+		}
+
+		createdArticle.TagNames = []string{}
+		for _, tag := range assigningTags {
+			createdArticle.TagNames = append(createdArticle.TagNames, tag.Name)
+		}
+
+		return nil
+	})
 	if err != nil {
 		return domain.Article{}, err
 	}
 
-	created.TagNames = []string{}
-	for _, tag := range tags {
-		created.TagNames = append(created.TagNames, tag.Name)
-	}
+	return createdArticle, nil
+}
 
-	return created, nil
+func FilterTagNotExist(existing []domain.Tag, incoming []string) []domain.Tag {
+	result := []domain.Tag{}
+	existMap := map[string]domain.Tag{}
+	for _, tag := range existing {
+		existMap[tag.Name] = tag
+	}
+	for _, tag := range incoming {
+		if _, exist := existMap[tag]; exist {
+			continue
+		}
+		result = append(result, domain.Tag{Name: tag})
+	}
+	return result
 }

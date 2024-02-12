@@ -96,6 +96,7 @@ func (server *Server) articleRouter(router fiber.Router) {
 
 	aRouter := router.Group("/articles")
 
+	aRouter.Get("/:slug", server.AuthMiddleware(false), articleHandler.GetArticle)
 	aRouter.Use(server.AuthMiddleware(true))
 	aRouter.Post("/", articleHandler.CreateArticle)
 }

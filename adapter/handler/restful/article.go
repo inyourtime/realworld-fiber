@@ -59,3 +59,23 @@ func (h *articleHandler) CreateArticle(c *fiber.Ctx) error {
 	res := ArticleResponse{Article: serializeArticle(article)}
 	return c.Status(http.StatusCreated).JSON(res)
 }
+
+func (h *articleHandler) GetArticle(c *fiber.Ctx) error {
+	arg, err := getAuthArg(c)
+	if err != nil {
+		return errorHandler(c, err)
+	}
+
+	slug := c.Params("slug")
+
+	article, err := h.articleUc.GetArticle(port.GetArticleParams{
+		AuthArg: arg,
+		Article: domain.Article{Slug: slug},
+	})
+	if err != nil {
+		return errorHandler(c, err)
+	}
+
+	res := ArticleResponse{Article: serializeArticle(article)}
+	return c.Status(http.StatusCreated).JSON(res)
+}

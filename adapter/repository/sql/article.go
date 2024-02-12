@@ -17,81 +17,70 @@ func NewArticleRepository(db *gorm.DB) port.ArticleRepository {
 	return &articleRepo{db: db}
 }
 
-// func (r *articleRepo) FilterTags(condition interface{}) ([]domain.Tag, error) {
-// 	tags := []model.Tag{}
-// 	err := r.db.Where(condition).Find(&tags).Error
-// 	if err != nil {
-// 		return []domain.Tag{}, err
-// 	}
-// 	result := []domain.Tag{}
-// 	for _, tag := range tags {
-// 		result = append(result, tag.ToDomain())
-// 	}
-// 	return result, nil
-// }
-
-func (r *articleRepo) CreateArticle(tx *gorm.DB, arg *model.Article) error {
-	if err := tx.Create(arg).Error; err != nil {
-		if err == gorm.ErrDuplicatedKey {
-			return exception.New(exception.TypeValidation, "Slug is already existing", err)
-		}
-		return err
-	}
-	return nil
-}
-
-func (r *articleRepo) FilterTags(tx *gorm.DB, condition interface{}, result *[]model.Tag) error {
-	return tx.Where(condition).Find(result).Error
-}
-
-func (r *articleRepo) AddTags(tx *gorm.DB, arg *[]model.Tag) error {
-	return tx.Create(arg).Error
-}
-
-func (r *articleRepo) AssignTags(tx *gorm.DB, article *model.Article, tags *[]model.Tag) error {
-	return tx.Model(article).Association("Tags").Append(tags)
-}
-
-func (r *articleRepo) CreateArticleTransaction(arg domain.Article) (domain.Article, []domain.Tag, error) {
-	article := model.AsArticle(arg)
-	tags := []model.Tag{}
-	existingTags := []model.Tag{}
-	assigningTags := []model.Tag{}
-
-	err := r.db.Transaction(func(tx *gorm.DB) error {
-		if err := r.CreateArticle(tx, &article); err != nil {
-			return err
-		}
-		if len(arg.TagNames) == 0 {
-			return nil
-		}
-
-		if err := r.FilterTags(tx, map[string]interface{}{"name": arg.TagNames}, &existingTags); err != nil {
-			return err
-		}
-
-		model.FilterTagNotExist(existingTags, arg.TagNames, &tags)
-
-		if len(tags) > 0 {
-			if err := r.AddTags(tx, &tags); err != nil {
-				return err
-			}
-		}
-
-		assigningTags = append(existingTags, tags...)
-		if err := r.AssignTags(tx, &article, &assigningTags); err != nil {
-			return err
-		}
-		return nil
-	})
+func (r *articleRepo) FilterArticles(condition interface{}) ([]domain.Article, error) {
+	articles := []model.Article{}
+	err := r.db.
+		Preload("Author", func(db *gorm.DB) *gorm.DB {
+			return db.Select("ID", "Username", "Bio", "Image")
+		}).
+		Where(condition).Find(&articles).Error
 	if err != nil {
-		return domain.Article{}, []domain.Tag{}, err
+		return []domain.Article{}, err
+	}
+	result := []domain.Article{}
+	for _, article := range articles {
+		result = append(result, article.ToDomain())
+	}
+	return result, nil
+}
+
+func (r *articleRepo) CreateArticle(arg domain.Article) (domain.Article, error) {
+	article := model.AsArticle(arg)
+	err := r.db.Create(&article).Error
+	if err != nil {
+		if err == gorm.ErrDuplicatedKey {
+			return domain.Article{}, exception.New(exception.TypeValidation, "Slug is already existing", err)
+		}
+		return domain.Article{}, err
+	}
+	return article.ToDomain(), nil
+}
+
+func (r *articleRepo) FilterTags(condition interface{}) ([]domain.Tag, error) {
+	tags := []model.Tag{}
+	result := []domain.Tag{}
+	err := r.db.Where(condition).Find(&tags).Error
+	if err != nil {
+		return []domain.Tag{}, err
+	}
+	for _, tag := range tags {
+		result = append(result, tag.ToDomain())
+	}
+	return result, nil
+}
+
+func (r *articleRepo) AddTags(arg port.AddTagsPayload) ([]domain.Tag, error) {
+	tags := []model.Tag{}
+	for _, tag := range arg.Tags {
+		tags = append(tags, model.AsTag(tag))
+	}
+	err := r.db.Create(&tags).Error
+	if err != nil {
+		return []domain.Tag{}, err
 	}
 
-	resultTags := []domain.Tag{}
-	for _, tag := range assigningTags {
-		resultTags = append(resultTags, tag.ToDomain())
+	result := []domain.Tag{}
+	for _, tag := range tags {
+		result = append(result, tag.ToDomain())
 	}
+	return result, nil
+}
 
-	return article.ToDomain(), resultTags, nil
+func (r *articleRepo) AssignTags(arg port.AssignTagsParams) error {
+	article := model.AsArticle(arg.Article)
+	tags := []model.Tag{}
+	for _, tag := range arg.Tags {
+		tags = append(tags, model.AsTag(tag))
+	}
+	return r.db.Model(&article).Association("Tags").Append(&tags)
 }

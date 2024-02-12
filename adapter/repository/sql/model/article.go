@@ -60,15 +60,11 @@ func AsArticle(arg domain.Article) Article {
 	}
 }
 
-func FilterTagNotExist(existing []Tag, incoming []string, result *[]Tag) {
-	existMap := map[string]Tag{}
-	for _, tag := range existing {
-		existMap[tag.Name] = tag
-	}
-	for _, tag := range incoming {
-		if _, exist := existMap[tag]; exist {
-			continue
-		}
-		*result = append(*result, Tag{Name: tag})
+func AsTag(arg domain.Tag) Tag {
+	return Tag{
+		Model: gorm.Model{
+			ID: arg.ID,
+		},
+		Name: arg.Name,
 	}
 }
